@@ -1,0 +1,344 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Jurnal Activități Camion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: cab-tablet console — status strip, big activity tiles, then the log table */
+:root{
+  --bg:#eef1f5; --panel:#ffffff; --ink:#14202e; --muted:#5b6878; --line:#d5dbe3;
+  --navy:#16324f; --accent:#e8a317; --accent-ink:#1b1300; --danger:#c0392b; --ok:#2e7d4f;
+  --tile:#1d4170; --tile-ink:#f4f7fb; --tile-hover:#245089;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c141e; --panel:#142130; --ink:#e6edf5; --muted:#93a3b6; --line:#25364a;
+  --navy:#0a1622; --accent:#f0b43a; --accent-ink:#1b1300; --danger:#ff6b5b; --ok:#5fcf8c;
+  --tile:#1b3a60; --tile-ink:#eef4fb; --tile-hover:#23497a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c141e; --panel:#142130; --ink:#e6edf5; --muted:#93a3b6; --line:#25364a;
+  --navy:#0a1622; --accent:#f0b43a; --accent-ink:#1b1300; --danger:#ff6b5b; --ok:#5fcf8c;
+  --tile:#1b3a60; --tile-ink:#eef4fb; --tile-hover:#23497a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1100px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--display);letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:30px;font-weight:700;text-transform:uppercase}
+h2{font-size:20px;font-weight:600;text-transform:uppercase}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.clock{font-family:var(--mono);font-size:26px;font-variant-numeric:tabular-nums}
+.date{color:var(--muted);font-size:13px;text-transform:capitalize}
+.status{background:var(--navy);color:#f4f7fb;border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center}
+.status .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a9bbd0}
+.status .cur{font-family:var(--display);font-size:28px;font-weight:700;text-transform:uppercase;color:var(--accent)}
+.status .dur{font-family:var(--mono);font-size:22px;text-align:right;font-variant-numeric:tabular-nums}
+.status .since{font-size:13px;color:#c9d6e5;grid-column:1/-1;min-width:0;overflow-wrap:anywhere}
+.locrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.locrow label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:100%}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#loc{flex:1 1 220px}
+.gpsnote{font-size:12px;color:var(--muted);width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:var(--tile);color:var(--tile-ink);border:2px solid transparent;border-radius:10px;padding:18px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:.02em;transition:background .15s,transform .08s}
+.tile:hover{background:var(--tile-hover)}
+.tile:active{transform:scale(.97)}
+.tile.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tile.warn{background:#7a2620}
+.tile svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tile.flash{animation:fl .6s}
+@keyframes fl{0%{background:var(--accent);color:var(--accent-ink)}100%{}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--danger);border-color:var(--danger);background:transparent}
+.btn.small{padding:6px 10px;font-size:13px}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th{font-family:var(--display);font-size:13px;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);background:var(--bg)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.t{font-family:var(--mono);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--tile);color:var(--tile-ink);font-family:var(--display);font-weight:600;font-size:14px;white-space:nowrap}
+.chip.Defectiune{background:#7a2620}
+.daysep td{background:var(--bg);font-family:var(--display);font-weight:600;text-transform:capitalize;color:var(--muted);letter-spacing:.04em}
+.empty{color:var(--muted);text-align:center;padding:24px}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.sync{display:inline-flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--ok)}
+a{color:inherit}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:18px;width:min(440px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1}
+@media (max-width:480px){.grid{grid-template-columns:repeat(3,1fr)}.tile{font-size:16px;padding:12px 4px}.tile svg{width:34px;height:34px}.clock{font-size:20px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><h1>Activități</h1><div class="date" id="today"></div></div>
+    <div class="clock" id="clock">--:--</div>
+  </header>
+
+  <section class="status" aria-live="polite">
+    <span class="lbl">Activitate curentă</span><span class="lbl" style="text-align:right">Durată</span>
+    <span class="cur" id="curName">—</span><span class="dur" id="curDur">00:00</span>
+    <span class="since" id="curSince">Apasă o activitate pentru a începe jurnalul.</span>
+  </section>
+
+  <div class="locrow">
+    <label for="loc">Locația (se salvează la fiecare activitate)</label>
+    <input id="loc" type="text" placeholder="ex: Leipzig, DE – parcare A14" autocomplete="off">
+    <button class="btn" id="gpsBtn" type="button">📍 GPS</button>
+    <span class="gpsnote" id="gpsNote">Încerc să citesc GPS-ul automat. Dacă nu merge, scrie orașul/țara.</span>
+  </div>
+
+  <section class="grid" id="tiles" aria-label="Alege activitatea"></section>
+
+  <section class="panel">
+    <div class="top"><h2>Registru</h2><span class="sync"><span class="dot" id="syncDot"></span><span id="syncTxt">Salvat pe acest dispozitiv</span></span></div>
+    <div class="toolbar">
+      <div class="field"><label for="from">De la</label><input type="date" id="from"></div>
+      <div class="field"><label for="to">Până la</label><input type="date" id="to"></div>
+      <button class="btn small" id="rangeAll" type="button">Tot</button>
+      <button class="btn small" id="rangeMonth" type="button">Luna asta</button>
+      <span style="flex:1"></span>
+      <button class="btn primary" id="xlsBtn" type="button">Export Excel</button>
+      <button class="btn primary" id="pdfBtn" type="button">Export PDF</button>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Start</th><th>Sfârșit</th><th>Durată</th><th>Activitate</th><th>Locație</th><th>Notă</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="foot"><span id="count"></span><span>Copie de siguranță: <button class="btn small" id="jsonBtn" type="button">Salvează backup</button> <label class="btn small" for="importFile" style="display:inline-block">Încarcă backup</label><input type="file" id="importFile" accept=".json" hidden></span></div>
+  </section>
+</div>
+
+<dialog id="editDlg">
+  <form method="dialog" id="editForm">
+    <h2>Modifică înregistrarea</h2>
+    <div class="field"><label for="eType">Activitate</label><select id="eType"></select></div>
+    <div class="field"><label for="eTime">Data și ora</label><input type="datetime-local" id="eTime" step="60"></div>
+    <div class="field"><label for="eLoc">Locație</label><input type="text" id="eLoc"></div>
+    <div class="field"><label for="eNote">Notă</label><textarea id="eNote" rows="2"></textarea></div>
+    <div class="toolbar"><button class="btn danger" id="eDel" type="button">Șterge</button><span style="flex:1"></span><button class="btn" value="cancel" type="submit">Anulează</button><button class="btn primary" id="eSave" type="button">Salvează</button></div>
+    <p id="delConfirm" hidden style="margin:0;color:var(--danger);font-size:13px">Apasă încă o dată „Șterge” pentru confirmare.</p>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+const I = {
+  drive:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3v6.5M4.5 15.5l5.5-2.5M19.5 15.5L14 13"/>',
+  load:'<path d="M12 2v7m-3-3 3 3 3-3"/><path d="M4 11l8-3 8 3v8l-8 3-8-3z"/><path d="M4 11l8 3 8-3M12 14v8"/>',
+  unload:'<path d="M4 7l8-3 8 3v8l-8 3-8-3z"/><path d="M4 7l8 3 8-3M12 10v8"/><path d="M12 22v-7m-3 3 3-3 3 3"/>',
+  couple:'<rect x="2" y="7" width="14" height="9" rx="1"/><circle cx="6" cy="18" r="1.6"/><circle cx="10" cy="18" r="1.6"/><path d="M16 12h3a3 3 0 0 0 0-4M18 6l1 2-2 1"/>',
+  reg:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  wait:'<rect x="7" y="6" width="10" height="12" rx="4"/><path d="M9 6V3h6v3M9 18v3h6v-3M12 10v2.5l1.5 1"/>',
+  brk:'<path d="M4 10h13v3a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6z"/><path d="M17 11h2a2 2 0 0 1 0 4h-2.5M3 21h15M8 3c-1 1.5 1 2.5 0 4M11 3c-1 1.5 1 2.5 0 4M14 3c-1 1.5 1 2.5 0 4"/>',
+  sleep:'<path d="M3 20v-9M21 20v-6M3 16h18M3 14h18v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="2"/>',
+  fuel:'<rect x="4" y="3" width="10" height="18" rx="1"/><path d="M7 7h4M14 9h2l2 2v7a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
+  wash:'<rect x="2" y="10" width="13" height="7" rx="1"/><path d="M15 12h4l3 3v2h-7"/><circle cx="6" cy="18.5" r="1.5"/><circle cx="18" cy="18.5" r="1.5"/><path d="M5 7c1-2 3-2 4 0M10 6c1-2 3-2 4 0"/>',
+  maint:'<path d="M3 13h9l4-3h2v3l3-1"/><path d="M5 13v4h9l2-4"/><path d="M8 13V10h3"/><path d="M20 16v.5"/>',
+  down:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>'
+};
+const ACTS = [
+  {k:'Condus',ic:'drive'},{k:'Încărcare',ic:'load'},{k:'Descărcare',ic:'unload'},{k:'Cuplare',ic:'couple'},
+  {k:'Înregistrare',ic:'reg'},{k:'Așteptare',ic:'wait'},{k:'Pauză',ic:'brk'},{k:'Odihnă',ic:'sleep'},
+  {k:'Alimentare',ic:'fuel'},{k:'Spălare camion',ic:'wash'},{k:'Întreținere',ic:'maint'},{k:'Defecțiune',ic:'down',warn:true}
+];
+const LS='jurnal-camion-v1', LSLOC='jurnal-camion-loc';
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const fmtT=d=>`${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const fmtH=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const fmtDur=ms=>{if(ms==null||ms<0)return'';const m=Math.floor(ms/60000);return`${Math.floor(m/60)}h ${pad(m%60)}m`;};
+const isoDay=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const noDia=s=>String(s??'').replace(/[ăâ]/g,'a').replace(/[ĂÂ]/g,'A').replace(/î/g,'i').replace(/Î/g,'I').replace(/[șş]/g,'s').replace(/[ȘŞ]/g,'S').replace(/[țţ]/g,'t').replace(/[ȚŢ]/g,'T').normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+let entries=[]; let coll=null; let downloads=null; let coords=null;
+
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>el.classList.remove('show'),2200)}
+
+function sorted(){return [...entries].sort((a,b)=>a.ts-b.ts)}
+function withEnds(list){const s=sorted();const nextOf={};for(let i=0;i<s.length;i++)nextOf[s[i].id]=s[i+1]?s[i+1].ts:null;return list.map(e=>({...e,end:nextOf[e.id]}))}
+
+/* ---------- tiles ---------- */
+function renderTiles(){
+  const g=$('tiles');g.innerHTML='';
+  const cur=sorted().at(-1);
+  ACTS.forEach(a=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='tile'+(a.warn?' warn':'')+(cur&&cur.type===a.k?' active':'');
+    b.innerHTML=`<svg viewBox="0 0 24 24">${I[a.ic]}</svg><span>${a.k}</span>`;
+    b.onclick=()=>{addEntry(a.k);b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash')};
+    g.appendChild(b);
+  });
+}
+
+/* ---------- save ---------- */
+function persistLocal(){lsSet(LS,entries)}
+async function addEntry(type){
+  const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type,ts:Date.now(),loc:$('loc').value.trim(),lat:coords?coords.lat:null,lon:coords?coords.lon:null,note:''};
+  entries.push(e);persistLocal();renderAll();
+  toast(`${type} – ${fmtH(new Date(e.ts))} salvat`);
+  if(coll){try{await coll.doc(e.id).set(e)}catch(err){setSync(false)}}
+  refreshGps();
+}
+async function saveEntry(e){
+  const i=entries.findIndex(x=>x.id===e.id);if(i>=0)entries[i]=e;persistLocal();renderAll();
+  if(coll){try{await coll.doc(e.id).set(e)}catch(err){setSync(false)}}
+}
+async function deleteEntry(id){
+  entries=entries.filter(x=>x.id!==id);persistLocal();renderAll();
+  if(coll){try{await coll.doc(id).delete()}catch(err){}}
+}
+
+/* ---------- table ---------- */
+function inRange(e){const f=$('from').value,t=$('to').value;const d=isoDay(new Date(e.ts));return(!f||d>=f)&&(!t||d<=t)}
+function filtered(){return withEnds(entries).filter(inRange).sort((a,b)=>b.ts-a.ts)}
+function renderRows(){
+  const tb=$('rows');tb.innerHTML='';const list=filtered();
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty">Nicio activitate în perioada aleasă. Apasă un buton de mai sus pentru prima înregistrare.</td></tr>';}
+  let lastDay='';
+  list.forEach(e=>{
+    const d=new Date(e.ts);const day=d.toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if(day!==lastDay){lastDay=day;const r=document.createElement('tr');r.className='daysep';r.innerHTML=`<td colspan="7">${day}</td>`;tb.appendChild(r)}
+    const tr=document.createElement('tr');
+    const map=e.lat!=null?` <a href="https://maps.google.com/?q=${e.lat},${e.lon}" target="_blank" rel="noopener" title="Vezi pe hartă">🗺</a>`:'';
+    tr.innerHTML=`<td class="t">${fmtH(d)}</td><td class="t">${e.end?fmtH(new Date(e.end)):'<b>acum</b>'}</td><td class="t">${fmtDur((e.end||Date.now())-e.ts)}</td><td><span class="chip ${noDia(e.type)}"></span></td><td></td><td></td><td><button class="btn small" type="button">Modifică</button></td>`;
+    tr.children[3].firstChild.textContent=e.type;
+    tr.children[4].textContent=e.loc||'—';if(map)tr.children[4].insertAdjacentHTML('beforeend',map);
+    tr.children[5].textContent=e.note||'';
+    tr.querySelector('button').onclick=()=>openEdit(e.id);
+    tb.appendChild(tr);
+  });
+  $('count').textContent=`${list.length} înregistrări afișate · ${entries.length} în total`;
+}
+function renderStatus(){
+  const cur=sorted().at(-1);
+  if(!cur){$('curName').textContent='—';$('curDur').textContent='00:00';$('curSince').textContent='Apasă o activitate pentru a începe jurnalul.';return}
+  $('curName').textContent=cur.type;
+  const m=Math.floor((Date.now()-cur.ts)/60000);$('curDur').textContent=`${pad(Math.floor(m/60))}:${pad(m%60)}`;
+  $('curSince').textContent=`Început la ${fmtT(new Date(cur.ts))}${cur.loc?' · '+cur.loc:''}`;
+}
+function renderAll(){renderTiles();renderRows();renderStatus()}
+
+/* ---------- edit dialog ---------- */
+let editing=null;
+function openEdit(id){
+  const e=entries.find(x=>x.id===id);if(!e)return;editing=e;
+  $('eType').innerHTML=ACTS.map(a=>`<option${a.k===e.type?' selected':''}>${a.k}</option>`).join('');
+  const d=new Date(e.ts);$('eTime').value=`${isoDay(d)}T${fmtH(d)}`;
+  $('eLoc').value=e.loc||'';$('eNote').value=e.note||'';$('delConfirm').hidden=true;
+  $('editDlg').showModal();
+}
+$('eSave').onclick=()=>{if(!editing)return;const ts=new Date($('eTime').value).getTime();
+  saveEntry({...editing,type:$('eType').value,ts:isNaN(ts)?editing.ts:ts,loc:$('eLoc').value.trim(),note:$('eNote').value.trim()});
+  $('editDlg').close();toast('Modificare salvată')};
+$('eDel').onclick=()=>{if($('delConfirm').hidden){$('delConfirm').hidden=false;return}deleteEntry(editing.id);$('editDlg').close();toast('Înregistrare ștearsă')};
+
+/* ---------- location ---------- */
+$('loc').value=lsGet(LSLOC,'');
+$('loc').addEventListener('input',()=>lsSet(LSLOC,$('loc').value));
+function refreshGps(manual){
+  if(!navigator.geolocation){$('gpsNote').textContent='GPS indisponibil aici – scrie locația manual.';return}
+  navigator.geolocation.getCurrentPosition(p=>{
+    coords={lat:+p.coords.latitude.toFixed(5),lon:+p.coords.longitude.toFixed(5)};
+    $('gpsNote').textContent=`GPS activ: ${coords.lat}, ${coords.lon} (se adaugă automat; textul de mai sus rămâne descrierea ta)`;
+    if(!$('loc').value){$('loc').value=`${coords.lat}, ${coords.lon}`;lsSet(LSLOC,$('loc').value)}
+  },()=>{coords=null;$('gpsNote').textContent=manual?'GPS blocat în această pagină – scrie orașul/țara în câmp.':'GPS indisponibil aici – scrie locația manual (orașul, țara).'},{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
+}
+$('gpsBtn').onclick=()=>refreshGps(true);
+
+/* ---------- export ---------- */
+function exportRows(){return withEnds(entries).filter(inRange).sort((a,b)=>a.ts-b.ts).map(e=>({
+  'Data':fmtT(new Date(e.ts)).slice(0,10),'Start':fmtH(new Date(e.ts)),'Sfârșit':e.end?fmtH(new Date(e.end)):'în curs',
+  'Durată':fmtDur((e.end||Date.now())-e.ts),'Minute':Math.round(((e.end||Date.now())-e.ts)/60000),
+  'Activitate':e.type,'Locație':e.loc||'','Coordonate':e.lat!=null?`${e.lat}, ${e.lon}`:'','Notă':e.note||''}))}
+function periodName(){const f=$('from').value,t=$('to').value;return(f||t)?`${f||'inceput'}_${t||'azi'}`:'complet'}
+async function deliver(filename,blob){
+  if(downloads){try{await downloads.save({filename,data:blob});toast('Fișier salvat');return}catch(e){if(e&&e.code==='declined')return}}
+  try{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Descărcarea nu a pornit')}
+}
+$('xlsBtn').onclick=()=>{
+  const rows=exportRows();if(!rows.length){toast('Nimic de exportat în perioada aleasă');return}
+  if(!window.XLSX){toast('Biblioteca Excel nu s-a încărcat');return}
+  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:11},{wch:7},{wch:8},{wch:9},{wch:8},{wch:16},{wch:32},{wch:20},{wch:30}];
+  const tot={};withEnds(entries).filter(inRange).forEach(e=>{tot[e.type]=(tot[e.type]||0)+((e.end||Date.now())-e.ts)});
+  const ws2=XLSX.utils.json_to_sheet(Object.entries(tot).map(([k,v])=>({'Activitate':k,'Total ore':+(v/3600000).toFixed(2),'Durată':fmtDur(v)})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Registru');XLSX.utils.book_append_sheet(wb,ws2,'Totaluri');
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  deliver(`registru_activitati_${periodName()}.xlsx`,new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+};
+$('pdfBtn').onclick=()=>{
+  const rows=exportRows();if(!rows.length){toast('Nimic de exportat în perioada aleasă');return}
+  if(!window.jspdf){toast('Biblioteca PDF nu s-a încărcat');return}
+  const doc=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  doc.setFontSize(16);doc.text('Registru activitati camion',14,15);
+  doc.setFontSize(10);const f=$('from').value,t=$('to').value;
+  doc.text(noDia(`Perioada: ${f||'de la inceput'} – ${t||'pana azi'}   ·   Generat: ${fmtT(new Date())}   ·   ${rows.length} inregistrari`),14,21);
+  doc.autoTable({startY:26,head:[['Data','Start','Sfarsit','Durata','Activitate','Locatie','Coordonate','Nota']],
+    body:rows.map(r=>[r['Data'],r['Start'],noDia(r['Sfârșit']),r['Durată'],noDia(r['Activitate']),noDia(r['Locație']),r['Coordonate'],noDia(r['Notă'])]),
+    styles:{fontSize:9,cellPadding:2},headStyles:{fillColor:[22,50,79]},alternateRowStyles:{fillColor:[240,243,247]},
+    columnStyles:{0:{cellWidth:22},1:{cellWidth:14},2:{cellWidth:16},3:{cellWidth:18},4:{cellWidth:30},6:{cellWidth:34}}});
+  deliver(`registru_activitati_${periodName()}.pdf`,doc.output('blob'));
+};
+$('jsonBtn').onclick=()=>deliver(`backup_registru_${isoDay(new Date())}.json`,new Blob([JSON.stringify(entries,null,1)],{type:'application/json'}));
+$('importFile').onchange=async ev=>{
+  const file=ev.target.files[0];if(!file)return;
+  try{const data=JSON.parse(await file.text());if(!Array.isArray(data))throw 0;
+    let n=0;for(const e of data){if(e&&e.id&&e.ts&&e.type&&!entries.some(x=>x.id===e.id)){entries.push(e);n++;if(coll){try{await coll.doc(e.id).set(e)}catch(_){}}}}
+    persistLocal();renderAll();toast(`${n} înregistrări importate`)}catch(e){toast('Fișierul nu este un backup valid')}
+  ev.target.value='';
+};
+$('rangeAll').onclick=()=>{$('from').value='';$('to').value='';renderRows()};
+$('rangeMonth').onclick=()=>{const d=new Date();$('from').value=isoDay(new Date(d.getFullYear(),d.getMonth(),1));$('to').value=isoDay(d);renderRows()};
+$('from').onchange=renderRows;$('to').onchange=renderRows;
+
+/* ---------- clock ---------- */
+function tick(){const d=new Date();$('clock').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  $('today').textContent=d.toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});renderStatus()}
+setInterval(tick,15000);
+
+/* ---------- sync ---------- */
+function setSync(on){$('syncDot').classList.toggle('on',on);$('syncTxt').textContent=on?'Sincronizat în cont (și pe dispozitiv)':'Salvat pe acest dispozitiv'}
+async function initCloud(){
+  if(!window.claude||!claude.use)return;
+  try{
+    downloads=await claude.use('downloads');
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!user)return;const uid=await user.id();if(!uid)return;
+    coll=db.collection(`data/users/${uid}/log`);
+    let first=true;const timer=setTimeout(()=>setSync(false),10000);
+    coll.onSnapshot(snap=>{
+      clearTimeout(timer);setSync(true);
+      const remote=snap.docs.map(d=>d.data()).filter(Boolean);
+      if(first){first=false;const ids=new Set(remote.map(r=>r.id));
+        entries.filter(e=>!ids.has(e.id)).forEach(e=>coll.doc(e.id).set(e).catch(()=>{}));
+        const merged=[...remote];entries.forEach(e=>{if(!ids.has(e.id))merged.push(e)});entries=merged;}
+      else entries=remote;
+      persistLocal();renderAll();
+    },()=>{clearTimeout(timer);setSync(false)});
+  }catch(e){setSync(false)}
+}
+
+entries=lsGet(LS,[]);
+tick();renderAll();refreshGps();initCloud();
+</script>
+
+</body></html>
